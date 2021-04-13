@@ -10,6 +10,7 @@
 
 * Arquivo com senhas em flask/senhas.pass, conforme modelo abaixo
 * Arquivo(s) com fontes true type em fonts/
+* Criar pasta mysql/
 
 ```
 senha do mysql
