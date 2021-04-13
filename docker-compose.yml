@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db_flask:
+     image: mariadb:latest
+     restart: always
+     command: mysqld --sql_mode=""
+     environment:
+       MYSQL_ROOT_PASSWORD: PvMyMkujM1LGss
+       MYSQL_DATABASE: flask
+       MYSQL_USER: flask
+       MYSQL_PASSWORD: Tnd9JpHkJ76qV7
+       TZ: America/Fortaleza
+     volumes:
+       - ./mysql:/var/lib/mysql
+     networks:
+       - web
+
+  flask:
+    image: flask:latest
+    build: .
+    volumes:
+      - ./flask:/flask
+      - ./fonts:/fonts
+    #labels:
+       #- "traefik.enable=true"
+       #- "traefik.http.routers.cimai.rule=PathPrefix(`/cimai`)"
+       #- "traefik.http.routers.cimai.tls=true"
+       #- "traefik.http.routers.cimai.tls.certresolver=certificado"
+       #- "traefik.http.routers.cimai.entrypoints=websecure"
+       #- "traefik.http.routers.cimai.middlewares=myauthcimai"
+       #- "traefik.http.middlewares.myauthcimai.basicauth.users=proreitor:$$apr1$$50sikna6$$qR2zEwrI3Pkm0lB3wBE1w/"
+    restart: always
+    ports:
+      - "8000:80"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

@@ -1,0 +1,4 @@
+mysql/*
+*.pyc
+*.log
+*.pass
