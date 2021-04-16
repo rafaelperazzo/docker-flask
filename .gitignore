@@ -2,3 +2,4 @@ mysql/*
 *.pyc
 *.log
 *.pass
+migrations/*
