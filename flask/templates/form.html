@@ -1,13 +1,12 @@
 {% extends "BASE.html" %}
 
 {% block title %}
-INDEX
+{{titulo}}
 {% endblock %}
 
 {% block content %}
-
-    <h3><a href="/criarUsuario">Criar Usuário</a></h3>
-
+    {% from 'bootstrap/form.html' import render_form %}
+    {{ render_form(form,action=action,method="post") }}
 {% endblock %}
 
 {% block scripts %}
