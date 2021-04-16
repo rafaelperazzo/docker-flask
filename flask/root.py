@@ -19,12 +19,15 @@ from PIL import Image, ImageDraw, ImageFont
 from forms import criarUsuario as novoUsuario
 from flask_bootstrap import Bootstrap
 import hashlib
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
 
 from models import database
 db = database.db
+migrate = Migrate()
+migrate.init_app(app,db)
 
 WORKING_DIR='/flask/'
 FONT_PATH = "/fonts/Times_New_Roman_Bold.ttf"
@@ -75,6 +78,7 @@ app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = 'cerulean'
 
 @app.before_first_request
 def inicializar_bd():
+    #db.drop_all()
     db.create_all()
     if (len(Usuarios.Users.query.all())==0):
         roleAdmin = Usuarios.Roles(name='admin',description='Administrador do Sistema')
@@ -128,11 +132,19 @@ def get_user_roles(user):
 def root():
     return (render_template('index.html',titulo='Sistema XXX'))
 
-@app.route('/criarUsuario')
+@app.route('/criarUsuario',methods=['POST','GET'])
 @auth.login_required(role='admin')
 def criarUsuario():
-    form = novoUsuario.NewUserForm()
-    return (render_template('form.html',form=form,action='/criarUsuario',titulo=u"Adicionar novo Usuário"))
+    if request.method == "POST":
+        pass
+        form = novoUsuario.NewUserForm()
+        if form.validate_on_submit():
+            return(str(request.form['name']))
+        else:
+            return(render_template('form.html',form=form,action='/criarUsuario',titulo=u"Adicionar novo Usuário"))
+    else:     
+        form = novoUsuario.NewUserForm()
+        return (render_template('form.html',form=form,action='/criarUsuario',titulo=u"Adicionar novo Usuário"))
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=80, url_prefix='/web')

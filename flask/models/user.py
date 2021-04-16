@@ -1,4 +1,5 @@
 from models import database
+import datetime
 
 class Roles(database.db.Model):
     id = database.db.Column(database.db.Integer(), primary_key=True)
@@ -12,7 +13,7 @@ class Users(database.db.Model):
     username = database.db.Column(database.db.String(80), unique=True, nullable=False)
     password = database.db.Column(database.db.String(80), unique=False, nullable=False)
     email = database.db.Column(database.db.String(120), unique=True, nullable=False)
-    
+    create_date = database.db.Column(database.db.DateTime,unique=False,nullable=True,default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     def __repr__(self):
         return '<User %r>' % self.username
 

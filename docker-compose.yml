@@ -22,6 +22,8 @@ services:
     volumes:
       - ./flask:/flask
       - ./fonts:/fonts
+    environment:
+       TZ: America/Fortaleza
     #labels:
        #- "traefik.enable=true"
        #- "traefik.http.routers.cimai.rule=PathPrefix(`/cimai`)"
