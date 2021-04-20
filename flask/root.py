@@ -138,13 +138,30 @@ def criarUsuario():
     if request.method == "POST":
         pass
         form = novoUsuario.NewUserForm()
-        if form.validate_on_submit():
-            return(str(request.form['name']))
-        else:
+        if form.validate_on_submit(): #TUDO OK COM O FORM ?
+            if request.form['inserir']=='1': #INSERT
+                usuario = Usuarios.Users(email=str(request.form['email']), password=hashlib.sha1(str(request.form['password']).encode('utf-8')).hexdigest(),username=str(request.form['username']))
+                db.session.add(usuario)
+                db.session.commit()
+            else: #UPDATE
+                pass
+            return(redirect(url_for('/')))
+        else: #Se o formulário não estiver preenchido corretamente
             return(render_template('form.html',form=form,action='/criarUsuario',titulo=u"Adicionar novo Usuário"))
-    else:     
-        form = novoUsuario.NewUserForm()
-        return (render_template('form.html',form=form,action='/criarUsuario',titulo=u"Adicionar novo Usuário"))
+    else:     #Se o método for o get
+        if ('update' in request.args): #ATUALIZAR USUARIO
+            atualizar = str(request.args.get('update'))
+            if (atualizar=='1'):
+                pass
+        elif ('listar' in request.args): #LISTAR USUÁRIOS
+            listar = str(request.args.get('listar'))
+            if (listar=='1'):
+                Usuarios.Users.query.all()
+                return (render_template('tabela.html'))
+
+        else: #CADASTRAR NOVO USUÁRIO
+            form = novoUsuario.NewUserForm(inserir='1')
+            return (render_template('form.html',form=form,action='/criarUsuario',titulo=u"Adicionar novo Usuário"))
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=80, url_prefix='/web')

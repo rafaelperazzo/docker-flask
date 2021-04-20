@@ -8,6 +8,7 @@ def validar_username(form,field):
             raise ValidationError('Erro!')
 
 class NewUserForm(FlaskForm):
+    inserir = HiddenField()
     name = StringField('Nome: ', validators=[DataRequired()])
     username = StringField('Nome de usuário: ',validators=[InputRequired()])
     email = EmailField('E-mail: ', validators=[DataRequired(),Email(check_deliverability=True)])

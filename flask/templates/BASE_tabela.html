@@ -1,0 +1,33 @@
+{% extends "BASE.html" %}
+
+{% block title %}
+INDEX
+{% endblock %}
+
+{%block javascript %}
+
+<link href="//cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
+
+{% endblock %}
+
+{% block content %}
+
+
+    
+{% endblock %}
+
+{% block scripts %}
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+
+<script>
+
+$(document).ready( function () {
+    $('#tabela').DataTable();
+} );
+
+</script>
+
+{% endblock %}
+
