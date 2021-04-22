@@ -1,12 +1,13 @@
 {% extends "BASE_tabela.html" %}
 
 {% block title %}
-INDEX
+LISTA DE USUÁRIOS
 {% endblock %}
 
 {% block content %}
 
-teste
+{% from 'bootstrap/table.html' import render_table %}
+{{ render_table(data,show_actions=True,edit_url=url_for('usuario_editar',id=':primary_key')) }}
     
 {% endblock %}
 
