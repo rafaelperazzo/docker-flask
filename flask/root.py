@@ -20,40 +20,40 @@ from forms import criarUsuario as novoUsuario
 from flask_bootstrap import Bootstrap
 import hashlib
 from flask_migrate import Migrate
+from flask_wtf.csrf import CsrfProtect
+import configparser
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
+CsrfProtect(app)
+config = configparser.ConfigParser()
+config.read('/flask/config.ini')
 
 from models import database
 db = database.db
 migrate = Migrate()
 migrate.init_app(app,db)
 
-WORKING_DIR='/flask/'
-FONT_PATH = "/fonts/Times_New_Roman_Bold.ttf"
+WORKING_DIR= config['DEFAULT']['working_dir']
+FONT_PATH = config['DEFAULT']['font_path']
 
 #HttpAuth
 auth = HTTPBasicAuth()
+
 #E-MAIL
 mail = Mail(app)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = ''
+app.config['MAIL_SERVER'] = config['EMAIL']['mail_server']
+app.config['MAIL_PORT'] = config['EMAIL']['mail_port']
+app.config['MAIL_USERNAME'] = config['EMAIL']['mail_username']
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_DEFAULT_SENDER'] = ''
+app.config['SECRET_KEY'] = config['DEFAULT']['secret_key']
+app.config['MAIL_PASSWORD'] = config['EMAIL']['mail_password']
+mail = Mail(app)
 
 #LOG
-logging.basicConfig(filename=WORKING_DIR + 'app.log', filemode='w', format='%(asctime)s %(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
-
-#SENHAS
-lines = [line.rstrip('\n') for line in open(WORKING_DIR + 'senhas.pass')]
-PASSWORD = lines[0]
-GMAIL_PASSWORD = lines[1]
-SESSION_SECRET_KEY = lines[2]
-app.config['SECRET_KEY'] = SESSION_SECRET_KEY
-app.config['MAIL_PASSWORD'] = GMAIL_PASSWORD
-mail = Mail(app)
+logging.basicConfig(filename=WORKING_DIR + config['DEFAULT']['log_file'], filemode=config['DEFAULT']['log_write'], format='%(asctime)s %(name)s - %(levelname)s - %(message)s',level=int(config['DEFAULT']['log_type']))
 
 '''
 https://flask-wtf.readthedocs.io/en/stable/index.html
@@ -61,10 +61,10 @@ https://wtforms.readthedocs.io/en/2.3.x/
 '''
 
 #BANCO DE DADOS
-DB_USER = 'root'
-DB_DATABASE = 'flask'
-DB_PASSWORD = PASSWORD
-DB_HOST = 'db_flask'
+DB_USER = config['DB']['db_user']
+DB_DATABASE = config['DB']['db_database']
+DB_PASSWORD = config['DB']['db_password']
+DB_HOST = config['DB']['db_host']
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://' + DB_USER + ':' + DB_PASSWORD + '@' + DB_HOST + '/' + DB_DATABASE + '?charset=utf8mb4'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'eTxYXyu5Hf6KGT'
@@ -74,7 +74,7 @@ db.init_app(app)
 from models import user as Usuarios
 
 #TEMA
-app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = 'cerulean'
+app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = config['DEFAULT']['theme']
 
 @app.before_first_request
 def inicializar_bd():
@@ -143,10 +143,10 @@ def usuario_adicionar():
             db.session.commit()
             return(redirect(url_for('/')))
         else: #Se o formulário não estiver preenchido corretamente
-            return(render_template('form.html',form=form,action='/usuario',titulo=u"Adicionar novo Usuário"))
+            return(render_template('form.html',form=form,action='/usuario/adicionar',titulo=u"Adicionar novo Usuário"))
     else:     #Se o método for o get, abrir o formulário
         form = novoUsuario.NewUserForm(inserir='1')
-        return (render_template('form.html',form=form,action='/usuario',titulo=u"Adicionar novo Usuário"))
+        return (render_template('form.html',form=form,action='/usuario/adicionar',titulo=u"Adicionar novo Usuário"))
 
 @app.route('/usuario/mostrarTodos',methods=['GET'])
 @auth.login_required(role='admin')
@@ -154,15 +154,32 @@ def usuario_mostrarTodos():
     data = Usuarios.Users.query.order_by(Usuarios.Users.username).all()
     return(render_template('tabela.html',data=data))
 
-@app.route('/usuario/<id>/editar',methods=['GET'])
+@app.route('/usuario/<id>/editar',methods=['GET','POST'])
 @auth.login_required(role='admin')
 def usuario_editar(id):
-    return(str(id))
+    form = novoUsuario.NewUserForm()
+    if request.method == "POST": #gravando alterações
+        if form.validate_on_submit():
+            usuario = Usuarios.Users.query.get(int(id))
+            usuario.username = request.form['username']
+            usuario.email = request.form['email']
+            usuario.password = request.form['password']
+            return(str(usuario.username))
+        else:
+            return(render_template('form.html',form=form,action='/usuario/' + str(id) + '/editar',titulo=u"Editando Usuário"))            
+    else: #abrindo página de edição
+        data = Usuarios.Users.query.filter_by(id=int(id)).first()
+        form.username.data = data.username
+        form.email.data = data.email
+        form.password.data = data.password
+        return(render_template('form.html',form=form,action='/usuario/' + str(id) + '/editar',titulo=u"Editando Usuário"))
 
-@app.route('/usuario/<id>/excluir',methods=['GET'])
+@app.route('/usuario/<id>/excluir',methods=['GET','POST'])
 @auth.login_required(role='admin')
 def usuario_excluir(id):
-    return(str(id))
+    Usuarios.Users.query.filter(Usuarios.Users.id==int(id)).delete()
+    #db.session.commit()
+    return(redirect(url_for('usuario_mostrarTodos')))
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=80, url_prefix='/web')

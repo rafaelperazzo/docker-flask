@@ -10,5 +10,6 @@ RUN pip install Flask-SQLAlchemy
 RUN pip install bootstrap-flask
 RUN pip install flask-security
 RUN pip install Flask-Migrate
+RUN pip install Flask-INIConfig
 EXPOSE 80
 CMD python /flask/root.py

@@ -3,3 +3,5 @@ mysql/*
 *.log
 *.pass
 migrations/*
+config.ini
+settings.py

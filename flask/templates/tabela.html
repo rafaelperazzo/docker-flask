@@ -7,8 +7,9 @@ LISTA DE USUÁRIOS
 {% block content %}
 
 {% from 'bootstrap/table.html' import render_table %}
-{{ render_table(data,show_actions=True,edit_url=url_for('usuario_editar',id=':primary_key')) }}
-    
+
+{{ render_table(data,show_actions=True,edit_url=url_for('usuario_editar',id=':primary_key'),delete_url=url_for('usuario_excluir',id=':primary_key')) }}
+
 {% endblock %}
 
 

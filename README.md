@@ -8,14 +8,32 @@
 
 ## Entrada
 
-* Arquivo com senhas em flask/senhas.pass, conforme modelo abaixo
+* Arquivo com senhas em flask/config.ini, conforme modelo abaixo
 * Arquivo(s) com fontes true type em fonts/
 * Criar pasta mysql/
 
 ```
-senha do mysql
-senha do gmail
-token
+[DEFAULT]
+testing = 1
+secret_key = 3emL8c443GSR6mqbPC5obDVY4m
+working_dir = /flask/
+font_path = /fonts/Times_New_Roman_Bold.ttf
+theme = cerulean
+log_file = app.log
+log_write = w
+log_type = 10
+
+[DB]
+db_user = root
+db_database = flask
+db_host = db_flask
+db_password = PvMyMkujM1LGss
+
+[EMAIL]
+mail_server = smtp.gmail.com
+mail_port = 465
+mail_username = cimai.proplan@ufca.edu.br
+mail_password = efsjwzdchegeklrq
 ```
 
 ## Saída
