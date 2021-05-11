@@ -15,7 +15,7 @@
 ```
 [DEFAULT]
 testing = 1
-secret_key = 3emL8c443GSR6mqbPC5obDVY4m
+secret_key = 
 working_dir = /flask/
 font_path = /fonts/Times_New_Roman_Bold.ttf
 theme = cerulean
@@ -27,13 +27,13 @@ log_type = 10
 db_user = root
 db_database = flask
 db_host = db_flask
-db_password = PvMyMkujM1LGss
+db_password = 
 
 [EMAIL]
 mail_server = smtp.gmail.com
 mail_port = 465
-mail_username = cimai.proplan@ufca.edu.br
-mail_password = efsjwzdchegeklrq
+mail_username = 
+mail_password = 
 ```
 
 ## Saída
