@@ -17,6 +17,8 @@ from flask_mail import Message
 from flask_uploads import *
 from PIL import Image, ImageDraw, ImageFont
 from forms import criarUsuario as novoUsuario
+from forms import criarTemplate as FormTemplate
+from forms import criarDocumento as FormDocumento
 from flask_bootstrap import Bootstrap
 import hashlib
 from flask_migrate import Migrate
@@ -73,7 +75,7 @@ db.init_app(app)
 
 #Carregando tabela de usuários
 from models import user as Usuarios
-
+from models import documentos as Documentos
 #TEMA
 app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = config['DEFAULT']['theme']
 
@@ -177,7 +179,7 @@ def usuario_mostrarTodos():
 @auth.login_required(role='admin')
 def usuario_editar(id):
     form = novoUsuario.NewUserForm()
-    if request.method == "POST": #gravando alterações00
+    if request.method == "POST": #gravando alterações
         if form.validate_on_submit():
             usuario = Usuarios.Users.query.get(int(id))
             usuario.username = request.form['username']
