@@ -203,65 +203,6 @@ def usuario_excluir(id):
     #db.session.commit()
     return(redirect(url_for('usuario_mostrarTodos')))
 
-
-def gerarCertificadoComplexo(name, template, font_path,posicao, output_png, output_pdf,tamanho,titulo="TITULO",tamanho2=30):
-   
-    text_y_position = posicao
-
-    # opens the image
-    img = Image.open(template, mode ='r')
-        
-    # gets the image width
-    image_width = img.width
-        
-    # gets the image height
-    image_height = img.height 
-
-    # creates a drawing canvas overlay 
-    # on top of the image
-    draw = ImageDraw.Draw(img)
-
-    # gets the font object from the 
-    # font file (TTF)
-    font = ImageFont.truetype(
-        font_path,
-        tamanho # change this according to your needs
-    )
-
-    # fetches the text width for 
-    # calculations later on
-    text_width, _ = draw.textsize(name, font = font)
-
-    draw.multiline_text(
-        (
-            # this calculation is done 
-            # to centre the image
-            (image_width - text_width) / 2,
-            text_y_position
-        ),
-        name,
-        font = font,fill=(0,0,0)        )
-    
-    font = ImageFont.truetype(
-        font_path,
-        tamanho2 # change this according to your needs
-    )
-    draw.multiline_text(
-        (
-            # this calculation is done 
-            # to centre the image
-            (image_width - text_width) / 2,
-            text_y_position+300
-        ),
-        titulo,
-        font = font,fill=(0,0,0)        )
-
-    # saves the image in png format
-    img.save(output_png)
-    image1 = Image.open(output_png)
-    im1 = image1.convert('RGB')
-    im1.save(output_pdf)
-
 def gerarCertificado(textos,x,y,tamanhos, alinhamentos,template, font_path,output_png, output_pdf):
    
     img = Image.open(template, mode ='r')    
@@ -314,7 +255,6 @@ def certificado():
     tamanhos = [24,24,24,24,24]
     alinhamentos = [0,0,0,1,1]
     gerarCertificado(textos,x,y,tamanhos,alinhamentos,template,FONT_PATH,output_png,output_pdf)
-    #gerarCertificadoComplexo(nome,template,FONT_PATH,1100,output_png,output_pdf,20,motivo,20)
     return (send_from_directory(DOCS_PATH, 'output.pdf'))
 
 if __name__ == "__main__":
