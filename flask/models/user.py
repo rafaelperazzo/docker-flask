@@ -10,6 +10,7 @@ class Roles(database.db.Model):
 
 class Users(database.db.Model):
     id = database.db.Column(database.db.Integer, primary_key=True)
+    name = database.db.Column(database.db.String(200), unique=False, nullable=False)
     username = database.db.Column(database.db.String(80), unique=True, nullable=False)
     password = database.db.Column(database.db.String(80), unique=False, nullable=False)
     email = database.db.Column(database.db.String(120), unique=True, nullable=False)

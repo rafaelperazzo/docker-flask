@@ -21,7 +21,11 @@
 
 
 <body>
-
+  {% if testing=='1' %}
+    <div class="alert alert-warning" role="alert">
+      MODO DE TESTES
+    </div>
+    {%endif%}
   <div id="header">
   {% block header %}
   <center><img src="{{ url_for('static', filename='brasao_uniao.png')}}" width="8%" alt="" align="center"></center>
@@ -67,6 +71,13 @@
      <br><i class="user icon"></i>Responsável: Prof. Rafael Perazzo
      <br><i class="phone icon"></i>Contatos: (88)3221-9566 - <i class="mail icon"></i> rafael.mota at ufca.edu.br</center>
     <div class="ui divider"></div>
+    <hr>
+    {% if testing=='1' %}
+    <div class="alert alert-warning" role="alert">
+      MODO DE TESTES
+    </div>
+    {%endif%}
+    
     {% endblock %}
   </div>
   

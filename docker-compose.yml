@@ -6,7 +6,7 @@ services:
      restart: always
      command: mysqld --sql_mode=""
      environment:
-       MYSQL_ROOT_PASSWORD: PvMyMkujM1LGss
+       MYSQL_ROOT_PASSWORD: cyU8fbwkeL2ikH
        MYSQL_DATABASE: flask
        MYSQL_USER: flask
        MYSQL_PASSWORD: Tnd9JpHkJ76qV7

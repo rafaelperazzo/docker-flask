@@ -5,3 +5,5 @@ mysql/*
 migrations/*
 config.ini
 settings.py
+*.png
+*.pdf
