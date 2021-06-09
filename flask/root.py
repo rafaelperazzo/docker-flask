@@ -1,3 +1,4 @@
+from string import Template
 from flask import Flask
 from waitress import serve
 from flask import render_template
@@ -76,6 +77,7 @@ db.init_app(app)
 #Carregando tabela de usuários
 from models import user as Usuarios
 from models import documentos as Documentos
+
 #TEMA
 app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = config['DEFAULT']['theme']
 
@@ -87,9 +89,16 @@ if int(config['DEFAULT']['testing'])==0:
 else:
     app.config['TESTING'] = 1
 
+app.config['UPLOADED_IMAGES_DEST'] = WORKING_DIR + 'upload'
+app.config['UPLOADS_DEFAULT_DEST'] = WORKING_DIR + 'upload'
+modelos = UploadSet('modelos',IMAGES)
+configure_uploads(app,modelos)
+patch_request_class(app)
+
+
 @app.before_first_request
 def inicializar_bd():
-    #db.drop_all()
+    db.drop_all()
     db.create_all()
     if (len(Usuarios.Users.query.all())==0):
         roleAdmin = Usuarios.Roles(name='admin',description='Administrador do Sistema')
@@ -162,7 +171,7 @@ def usuario_adicionar():
             usuario = Usuarios.Users(name=request.form['name'],email=str(request.form['email']), password=hashlib.sha1(str(request.form['password']).encode('utf-8')).hexdigest(),username=str(request.form['username']))
             db.session.add(usuario)
             db.session.commit()
-            return(redirect(url_for('/')))
+            return(redirect(url_for('root')))
         else: #Se o formulário não estiver preenchido corretamente
             return(render_template('form.html',form=form,action='/usuario/adicionar',titulo=u"Adicionar novo Usuário",testing=app.config['TESTING']))
     else:     #Se o método for o get, abrir o formulário
@@ -202,7 +211,7 @@ def usuario_editar(id):
 @auth.login_required(role='admin')
 def usuario_excluir(id):
     Usuarios.Users.query.filter(Usuarios.Users.id==int(id)).delete()
-    #db.session.commit()
+    db.session.commit()
     return(redirect(url_for('usuario_mostrarTodos')))
 
 def gerarCertificado(textos,x,y,tamanhos, alinhamentos,template, font_path,output_png, output_pdf):
@@ -258,6 +267,75 @@ def certificado():
     alinhamentos = [0,0,0,1,1]
     gerarCertificado(textos,x,y,tamanhos,alinhamentos,template,FONT_PATH,output_png,output_pdf)
     return (send_from_directory(DOCS_PATH, 'output.pdf'))
+
+@app.route('/template/adicionar',methods=['POST','GET'])
+@auth.login_required(role='admin')
+def template_adicionar():
+    if request.method == "POST":
+        form = FormTemplate.NewTemplateForm()
+        if form.validate_on_submit(): #TUDO OK COM O FORM ? ADICIONAR AO BD
+            modelos.save(request.files['arquivo'])            
+            logging.error(request.files['arquivo'].filename)
+            template = Documentos.Templates(arquivo=request.files['arquivo'].filename,x=request.form['x'],y=request.form['y'],tamanhos=request.form['tamanhos'],alinhamentos=request.form['alinhamentos'],quantidade_textos=request.form['quantidade_textos'],tipo=request.form['tipo'],descricao=request.form['descricao'])
+            db.session.add(template)
+            db.session.commit()
+            return(redirect(url_for('root')))
+        else: #Se o formulário não estiver preenchido corretamente
+            return(render_template('form.html',form=form,action='/template/adicionar',titulo=u"Adicionar novo Template",testing=app.config['TESTING']))
+    else:     #Se o método for o get, abrir o formulário
+        form = FormTemplate.NewTemplateForm()
+        return (render_template('form.html',form=form,action='/template/adicionar',titulo=u"Adicionar novo Template",testing=app.config['TESTING']))
+
+@app.route('/template/listar',methods=['GET'])
+@auth.login_required(role='admin')
+def template_listar():
+    data = Documentos.Templates.query.order_by(Documentos.Templates.create_date).all()
+    return(render_template('templates.html',data=data,testing=app.config['TESTING'],titulo='Lista de Templates'))
+
+@app.route('/template/<id>/excluir',methods=['GET','POST'])
+@auth.login_required(role='admin')
+def template_excluir(id):
+    Documentos.Templates.query.filter(Documentos.Templates.id==int(id)).delete()
+    db.session.commit()
+    return(redirect(url_for('template_listar')))
+
+@app.route('/template/<id>/editar',methods=['GET','POST'])
+@auth.login_required(role='admin')
+def template_editar(id):
+    form = FormTemplate.NewTemplateForm()
+    
+    if request.method == "POST": #gravando alterações
+        
+        if form.validate_on_submit():
+            template = Documentos.Templates.query.get(int(id))
+            template.tipo = request.form['tipo']
+            template.descricao=request.form['descricao']
+            template.nome = request.form['nome']
+            template.arquivo = request.form['arquivo']
+            template.x = request.form['x']
+            template.y = request.form['y']
+            template.tamanhos = request.form['tamanhos']
+            template.alinhamentos = request.form['alinhamentos']
+            template.quantidade_textos = request.form['quantidade_textos']
+            db.session.commit()
+            return(redirect(url_for('template_listar')))
+        
+        else:
+            return(render_template('form.html',form=form,action='/template/' + str(id) + '/editar',titulo=u"Editando Template",testing=app.config['TESTING']))            
+        
+    else: #abrindo página de edição
+        data = Documentos.Templates.query.filter_by(id=int(id)).first()
+        form.tipo.data = data.tipo
+        form.nome.data = data.nome
+        form.descricao.data = data.descricao
+        form.arquivo.data = data.arquivo
+        form.quantidade_textos.data = data.quantidade_textos
+        form.x.data = data.x
+        form.y.data = data.y
+        form.tamanhos.data = data.tamanhos
+        form.alinhamentos.data = data.alinhamentos
+        return(render_template('form.html',form=form,action='/template/' + str(id) + '/editar',titulo=u"Editando Template",testing=app.config['TESTING']))
+    
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=80, url_prefix='/web')
