@@ -5,4 +5,6 @@ from wtforms.validators import DataRequired,Email,Length,ValidationError,InputRe
 
 class NewDocumentoForm(FlaskForm):
     textos = TextAreaField('Vetor Textos: ', validators=[DataRequired()])
+    template = SelectField(u'Template: ',coerce=int)
+    nome = StringField('Nome do documento: ', validators=[DataRequired()])
     submit = SubmitField('Enviar')

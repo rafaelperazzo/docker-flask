@@ -98,7 +98,7 @@ patch_request_class(app)
 
 @app.before_first_request
 def inicializar_bd():
-    db.drop_all()
+    #db.drop_all()
     db.create_all()
     if (len(Usuarios.Users.query.all())==0):
         roleAdmin = Usuarios.Roles(name='admin',description='Administrador do Sistema')
@@ -159,6 +159,7 @@ def get_user_roles(user):
     return (roles)
 
 @app.route('/')
+@auth.login_required(role='admin')
 def root():
     return (render_template('index.html',titulo='Sistema XXX',testing=app.config['TESTING'],roles=session['roles']))
 
@@ -275,11 +276,10 @@ def template_adicionar():
         form = FormTemplate.NewTemplateForm()
         if form.validate_on_submit(): #TUDO OK COM O FORM ? ADICIONAR AO BD
             modelos.save(request.files['arquivo'])            
-            logging.error(request.files['arquivo'].filename)
-            template = Documentos.Templates(arquivo=request.files['arquivo'].filename,x=request.form['x'],y=request.form['y'],tamanhos=request.form['tamanhos'],alinhamentos=request.form['alinhamentos'],quantidade_textos=request.form['quantidade_textos'],tipo=request.form['tipo'],descricao=request.form['descricao'])
+            template = Documentos.Templates(nome=request.form['nome'],arquivo=request.files['arquivo'].filename,x=request.form['x'],y=request.form['y'],tamanhos=request.form['tamanhos'],alinhamentos=request.form['alinhamentos'],quantidade_textos=request.form['quantidade_textos'],tipo=request.form['tipo'],descricao=request.form['descricao'])
             db.session.add(template)
             db.session.commit()
-            return(redirect(url_for('root')))
+            return(redirect(url_for('template_listar')))
         else: #Se o formulário não estiver preenchido corretamente
             return(render_template('form.html',form=form,action='/template/adicionar',titulo=u"Adicionar novo Template",testing=app.config['TESTING']))
     else:     #Se o método for o get, abrir o formulário
@@ -335,7 +335,64 @@ def template_editar(id):
         form.tamanhos.data = data.tamanhos
         form.alinhamentos.data = data.alinhamentos
         return(render_template('form.html',form=form,action='/template/' + str(id) + '/editar',titulo=u"Editando Template",testing=app.config['TESTING']))
-    
+
+@app.route('/documento/adicionar',methods=['POST','GET'])
+@auth.login_required(role='admin')
+def documento_adicionar():
+    if request.method == "POST":
+        form = FormDocumento.NewDocumentoForm()
+        choices = [(tpl.id,tpl.nome) for tpl in Documentos.Templates.query.with_entities(Documentos.Templates.id,Documentos.Templates.nome).order_by(Documentos.Templates.nome).all()]
+        form.template.choices = choices
+        if form.validate_on_submit(): #TUDO OK COM O FORM ? ADICIONAR AO BD            
+            #template = Documentos.Templates(arquivo=request.files['arquivo'].filename,x=request.form['x'],y=request.form['y'],tamanhos=request.form['tamanhos'],alinhamentos=request.form['alinhamentos'],quantidade_textos=request.form['quantidade_textos'],tipo=request.form['tipo'],descricao=request.form['descricao'])
+            documento = Documentos.Documentos(nome=request.form['nome'],id_template=request.form['template'],textos=request.form['textos'])
+            db.session.add(documento)
+            db.session.commit()
+            return(redirect(url_for('documento_listar')))
+        else: #Se o formulário não estiver preenchido corretamente
+            return(render_template('form.html',form=form,action='/documento/adicionar',titulo=u"Adicionar novo Documento",testing=app.config['TESTING']))
+    else:     #Se o método for o get, abrir o formulário
+        form = FormDocumento.NewDocumentoForm()
+        choices = [(tpl.id,tpl.nome) for tpl in Documentos.Templates.query.with_entities(Documentos.Templates.id,Documentos.Templates.nome).order_by(Documentos.Templates.nome).all()]
+        form.template.choices = choices
+        logging.error(choices)
+        return (render_template('form.html',form=form,action='/documento/adicionar',titulo=u"Adicionar novo Documento",testing=app.config['TESTING']))
+
+@app.route('/documento/listar',methods=['GET'])
+@auth.login_required(role='admin')
+def documento_listar():
+    data = Documentos.Documentos.query.order_by(Documentos.Documentos.create_date).all()
+    return(render_template('documentos.html',data=data,testing=app.config['TESTING'],titulo='Lista de Documentos'))
+
+
+@app.route('/documento/<id>/excluir',methods=['GET','POST'])
+@auth.login_required(role='admin')
+def documento_excluir(id):
+    Documentos.Documentos.query.filter(Documentos.Documentos.id==int(id)).delete()
+    db.session.commit()
+    return(redirect(url_for('documento_listar')))
+
+@app.route('/documento/<id>/editar',methods=['GET','POST'])
+@auth.login_required(role='admin')
+def documento_editar(id):
+    form = FormDocumento.NewDocumentoForm()
+    choices = [(tpl.id,tpl.nome) for tpl in Documentos.Templates.query.with_entities(Documentos.Templates.id,Documentos.Templates.nome).order_by(Documentos.Templates.nome).all()]
+    form.template.choices = choices
+    if request.method == "POST": #gravando alterações    
+        if form.validate_on_submit():
+            documento = Documentos.Documentos.query.get(int(id))
+            documento.textos = request.form['textos']
+            documento.nome = request.form['nome']
+            documento.id_template=request.form['template']
+            db.session.commit()
+            return(redirect(url_for('documento_listar')))
+        else:
+            return(render_template('form.html',form=form,action='/documento/' + str(id) + '/editar',titulo=u"Editando Documento",testing=app.config['TESTING']))            
+    else: #abrindo página de edição
+        data = Documentos.Documentos.query.filter_by(id=int(id)).first()
+        form.textos.data = data.textos
+        form.template.data = data.id_template
+        return(render_template('form.html',form=form,action='/documento/' + str(id) + '/editar',titulo=u"Editando Documento",testing=app.config['TESTING']))
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=80, url_prefix='/web')

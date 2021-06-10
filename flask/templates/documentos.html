@@ -1,0 +1,38 @@
+{% extends "BASE_tabela.html" %}
+
+{% block title %}
+LISTA DE USUÁRIOS
+{% endblock %}
+
+{% block content %}
+
+<table id="tabela" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Template</th>
+                <th>Nome</th>
+                <th>Textos</th>
+                <th>Token</th>
+                <th>Data</th>
+                <th>Arquivo</th>
+            </tr>            
+        </thead>
+        <tbody>
+            {% for linha in data %}
+                <tr>
+                    <td>{{linha.id}}</td>
+                    <td>{{linha.template.nome}}</td>
+                    <td>{{linha.nome}}</td>
+                    <td>{{linha.textos}}</td>
+                    <td>{{linha.token}}</td>
+                    <td>{{linha.create_date}}</td>
+                    <td><a href="/" target="_blank">BAIXAR</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+</table>
+
+{% endblock %}
+
+
