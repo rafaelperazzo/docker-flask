@@ -1,21 +1,22 @@
-{% extends "BASE_tabela.html" %}
+{% extends "BASE_tabela_personalizada.html" %}
 
 {% block title %}
-LISTA DE USUÁRIOS
+{{titulo}}
 {% endblock %}
 
 {% block content %}
-
-<table id="tabela" class="display" style="width:100%">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Template</th>
+                <th>Tipo de template</th>
                 <th>Nome</th>
                 <th>Textos</th>
                 <th>Token</th>
                 <th>Data</th>
                 <th>Arquivo</th>
+                <th>Editar</th>
+                <th>Excluir</th>
             </tr>            
         </thead>
         <tbody>
@@ -23,16 +24,25 @@ LISTA DE USUÁRIOS
                 <tr>
                     <td>{{linha.id}}</td>
                     <td>{{linha.template.nome}}</td>
+                    <td>
+                        {% if linha.template.tipo==0 %}
+                            PNG
+                        {% elif linha.template.tipo==1 %}
+                            HTML
+                        {% else %}
+                            INDEFINIDO
+                        {% endif %}
+                    </td>
                     <td>{{linha.nome}}</td>
                     <td>{{linha.textos}}</td>
                     <td>{{linha.token}}</td>
                     <td>{{linha.create_date}}</td>
                     <td><a href="/" target="_blank">BAIXAR</a></td>
+                    <td><a href="/documento/{{linha.id}}/editar">EDITAR</a></td>
+                    <td><a href="/documento/{{linha.id}}/excluir" onclick="return confirm('Tem certeza ? A operação não poderá ser desfeita')">EXCLUIR</a></td>
                 </tr>
             {% endfor %}
         </tbody>
-</table>
-
 {% endblock %}
 
 

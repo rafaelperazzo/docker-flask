@@ -91,6 +91,7 @@ else:
 
 app.config['UPLOADED_IMAGES_DEST'] = WORKING_DIR + 'upload'
 app.config['UPLOADS_DEFAULT_DEST'] = WORKING_DIR + 'upload'
+app.config['UPLOADED_IMAGES_ALLOW'] = set(['png'])
 modelos = UploadSet('modelos',IMAGES)
 configure_uploads(app,modelos)
 patch_request_class(app)
@@ -269,13 +270,30 @@ def certificado():
     gerarCertificado(textos,x,y,tamanhos,alinhamentos,template,FONT_PATH,output_png,output_pdf)
     return (send_from_directory(DOCS_PATH, 'output.pdf'))
 
+@app.route('/certificado/<token>/gerar',methods=['GET'])
+@auth.login_required(role='admin')
+def gerar_certificado(token):
+    documento = Documentos.Documentos.query.filter_by(token=token).first()
+    if (len(documento)>0):
+        pass
+    else:
+        return("Documento inexistente!")
+
 @app.route('/template/adicionar',methods=['POST','GET'])
 @auth.login_required(role='admin')
 def template_adicionar():
     if request.method == "POST":
         form = FormTemplate.NewTemplateForm()
         if form.validate_on_submit(): #TUDO OK COM O FORM ? ADICIONAR AO BD
-            modelos.save(request.files['arquivo'])            
+            if 'arquivo' in request.files:
+                try:
+                    modelos.save(request.files['arquivo'])
+                except:
+                    logging.error(request.files['arquivo'].filename)
+                    logging.error(request.form['nome'])
+                    return("Erro no upload!")
+            else:
+                logging.error("AUSENCIA DE ARQUIVO DE TEMPLATE")
             template = Documentos.Templates(nome=request.form['nome'],arquivo=request.files['arquivo'].filename,x=request.form['x'],y=request.form['y'],tamanhos=request.form['tamanhos'],alinhamentos=request.form['alinhamentos'],quantidade_textos=request.form['quantidade_textos'],tipo=request.form['tipo'],descricao=request.form['descricao'])
             db.session.add(template)
             db.session.commit()
