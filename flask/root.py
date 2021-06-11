@@ -289,8 +289,7 @@ def template_adicionar():
                 try:
                     modelos.save(request.files['arquivo'])
                 except:
-                    logging.error(request.files['arquivo'].filename)
-                    logging.error(request.form['nome'])
+                    logging.error(len(request.files['arquivo'].filename))
                     return("Erro no upload!")
             else:
                 logging.error("AUSENCIA DE ARQUIVO DE TEMPLATE")
